@@ -1,2 +1,3 @@
 .env/
 GBDM_SQ/
+__pycache__/
