@@ -1,0 +1,44 @@
+2026-03-24 23:56:59,800 - INFO - Connecting to Neo4j at neo4j+s://54d64a63.databases.neo4j.io...
+2026-03-24 23:57:00,344 - INFO - Creating constraints/indexes for high query fields...
+2026-03-24 23:57:00,419 - INFO - Ensured constraint/index for Label: Customer
+2026-03-24 23:57:00,493 - INFO - Ensured constraint/index for Label: BusinessPartner
+2026-03-24 23:57:00,564 - INFO - Ensured constraint/index for Label: CompanyCode
+2026-03-24 23:57:00,636 - INFO - Ensured constraint/index for Label: GLAccount
+2026-03-24 23:57:00,705 - INFO - Ensured constraint/index for Label: Product
+2026-03-24 23:57:00,775 - INFO - Ensured constraint/index for Label: Plant
+2026-03-24 23:57:00,843 - INFO - Ensured constraint/index for Label: SalesOrder
+2026-03-24 23:57:00,912 - INFO - Ensured constraint/index for Label: SalesOrderItem
+2026-03-24 23:57:00,982 - INFO - Ensured constraint/index for Label: DeliveryDocument
+2026-03-24 23:57:01,050 - INFO - Ensured constraint/index for Label: DeliveryItem
+2026-03-24 23:57:01,115 - INFO - Ensured constraint/index for Label: BillingDocument
+2026-03-24 23:57:01,184 - INFO - Ensured constraint/index for Label: BillingDocumentItem
+2026-03-24 23:57:01,253 - INFO - Ensured constraint/index for Label: AccountingDocument
+2026-03-24 23:57:01,324 - INFO - Ensured constraint/index for Label: ShippingPoint
+2026-03-24 23:57:01,325 - INFO - --- Starting Node Ingestion ---
+2026-03-24 23:57:01,454 - INFO - Loaded 8 nodes of type Customer
+2026-03-24 23:57:01,533 - INFO - Loaded 8 nodes of type BusinessPartner
+2026-03-24 23:57:01,656 - INFO - Loaded 69 nodes of type Product
+2026-03-24 23:57:01,767 - INFO - Loaded 44 nodes of type Plant
+2026-03-24 23:57:01,938 - INFO - Loaded 100 nodes of type SalesOrder
+2026-03-24 23:57:02,069 - INFO - Loaded 167 nodes of type SalesOrderItem
+2026-03-24 23:57:02,166 - INFO - Loaded 86 nodes of type DeliveryDocument
+2026-03-24 23:57:02,264 - INFO - Loaded 137 nodes of type DeliveryItem
+2026-03-24 23:57:02,375 - INFO - Loaded 163 nodes of type BillingDocument
+2026-03-24 23:57:02,475 - INFO - Loaded 245 nodes of type BillingDocumentItem
+2026-03-24 23:57:02,543 - INFO - Loaded 1 nodes of type GLAccount
+2026-03-24 23:57:02,611 - INFO - Loaded 1 nodes of type CompanyCode
+2026-03-24 23:57:02,746 - INFO - Loaded 123 nodes of type AccountingDocument
+2026-03-24 23:57:02,746 - INFO - --- Starting Edge Ingestion ---
+2026-03-24 23:57:02,837 - INFO - Loaded 100 edges of type PLACED_BY between SalesOrder and Customer
+2026-03-24 23:57:02,925 - INFO - Loaded 167 edges of type HAS_ITEM between SalesOrder and SalesOrderItem
+2026-03-24 23:57:03,007 - INFO - Loaded 167 edges of type REQUESTS_PRODUCT between SalesOrderItem and Product
+2026-03-24 23:57:03,090 - INFO - Loaded 137 edges of type FULFILLS_SALES_ORDER between DeliveryItem and SalesOrder
+2026-03-24 23:57:03,167 - INFO - Loaded 137 edges of type HAS_ITEM between DeliveryDocument and DeliveryItem
+2026-03-24 23:57:03,254 - INFO - Loaded 245 edges of type REFERENCES_DELIVERY between BillingDocumentItem and DeliveryDocument
+2026-03-24 23:57:03,334 - INFO - Loaded 245 edges of type HAS_ITEM between BillingDocument and BillingDocumentItem
+2026-03-24 23:57:03,413 - INFO - Loaded 163 edges of type BILLS_CUSTOMER between BillingDocument and Customer
+2026-03-24 23:57:03,496 - INFO - Loaded 163 edges of type GENERATES_FINANCIAL between BillingDocument and AccountingDocument
+2026-03-24 23:57:03,574 - INFO - Loaded 123 edges of type POSTS_TO between AccountingDocument and GLAccount
+2026-03-24 23:57:03,650 - INFO - Loaded 8 edges of type IS between Customer and BusinessPartner
+2026-03-24 23:57:03,732 - INFO - Loaded 137 edges of type SHIPPED_FROM_PLANT between DeliveryItem and Plant
+2026-03-24 23:57:03,732 - INFO - --- Ingestion Complete ---

@@ -1,6 +1,6 @@
-# Preprocessed Data Validation Report
+# Preprocessed Data & Graph Validation Report
 
-## 1. Schema Validation Step
+## 1. Local Schema Validation Step
 Checking if all entity files are loaded properly with expected columns and zero critical errors.
 
 - ✅ `billing_document_cancellations` loaded successfully (80 rows, 14 columns).
@@ -25,30 +25,19 @@ Checking if all entity files are loaded properly with expected columns and zero 
 
 **Result: All entity files pass schema validation step with zero critical errors.**
 
-## 2. Foreign Key Resolution
-Checking resolving foreign key references across all entity types.
+## 2. Graph Integrity & Flow Validation
+Running Cypher queries to detect orphaned nodes, missing relationships, and broken business flows. Problematic nodes are flagged in the graph with the `Flagged` label and a `flagReason` property.
 
-| Table | Foreign Key Column | Target Entity | Match Rate |
+| Check Description | Entity | Broken Count | Queryable Metadata |
 | :--- | :--- | :--- | :--- |
-| sales_order_headers | soldToParty | CUST_ | 100.00% |
-| sales_order_items | material | PROD_ | 100.00% |
-| billing_document_headers | soldToParty | CUST_ | 100.00% |
-| billing_document_headers | accountingDocument | ACC_ | 87.73% |
-| billing_document_items | material | PROD_ | 100.00% |
-| billing_document_items | referenceSdDocument | DEL_ | 100.00% |
-| outbound_delivery_items | plant | PLANT_ | 100.00% |
-| outbound_delivery_items | referenceSdDocument | SO_ | 100.00% |
-| journal_entry_items_accounts_receivable | customer | CUST_ | 100.00% |
-| payments_accounts_receivable | customer | CUST_ | 100.00% |
-| customer_company_assignments | reconciliationAccount | GL_ | 100.00% |
+| Orphaned Nodes (No Edges) | Plant, CompanyCode | 40 ⚠️ | `MATCH (n:Flagged {flagReason: 'Orphaned Node'})` |
+| Missing Product Reference in Sales Orders | - | 0 ✅ | - |
+| Missing Delivery Reference in Billing | - | 0 ✅ | - |
+| Broken Flow: Sales Orders with No Delivery | SalesOrder | 14 ⚠️ | `MATCH (n:Flagged {flagReason: 'O2C Leak: No Delivery Found'})` |
+| Broken Flow: Deliveries with No Billing | DeliveryDocument | 86 ⚠️ | `MATCH (n:Flagged {flagReason: 'O2C Leak: No Billing Found'})` |
+| Broken Flow: Billing with No Accounting | BillingDocument | 40 ⚠️ | `MATCH (n:Flagged {flagReason: 'O2C Leak: No Accounting Document Found'})` |
 
-**Result: Some foreign key references have slightly lower match rates (expected if transactional dataset is smaller than master dataset context).**
-
-## 3. Reproducibility & Documentation
-- **Preprocessing Script**: `preprocess.py` & `generate_schema.py` exist, are documented, and verified reproducible.
-- **Schema Diagram**: Documented as Mermaid diagram in `reports/schema.md` (Verified).
-
-## 4. Edge Cardinalities
+## 3. Edge Cardinalities
 Expected cardinalities defined for graph modelling ingestion:
 - **Customer to SalesOrder**: `1:N`
 - **BusinessPartner to Customer**: `1:1`
@@ -61,4 +50,4 @@ Expected cardinalities defined for graph modelling ingestion:
 - **AccountingDocument to GLAccount**: `N:1`
 - **Customer to CompanyCode**: `1:N` (Assignments)
 
-**Status: Review completed. Schema and validation checks passed and ready for ingestion work.**
+**Status: Review and Graph Integrity checks completed.**
