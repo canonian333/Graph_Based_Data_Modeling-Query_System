@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Graph Explorer</title>
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --border-color: #30363d;
+            --header-bg: #010409;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        header {
+            background: var(--header-bg);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--accent-color);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 4px;
+            width: 250px;
+            outline: none;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #graph {
+            flex: 1;
+            background: #000;
+        }
+
+        #metadata-panel {
+            width: 350px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 5;
+            transform: translateX(100%);
+        }
+
+        #metadata-panel.visible {
+            transform: translateX(0);
+            position: relative;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        #metadata-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .placeholder-text {
+            color: #8b949e;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .metadata-item {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 8px;
+        }
+
+        .metadata-label {
+            font-size: 0.8rem;
+            color: #8b949e;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .metadata-value {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Graph Explorer</h1>
+            <div class="search-bar">
+                <input type="text" id="search" placeholder="Search node name..." />
+                <button onclick="searchNode()">Search</button>
+            </div>
+        </header>
+        <main>
+            <div id="graph"></div>
+            <aside id="metadata-panel">
+                <div class="panel-header">
+                    <h2>Metadata</h2>
+                    <button class="close-btn" onclick="closePanel()">×</button>
+                </div>
+                <div id="metadata-content">
+                    <p class="placeholder-text">Select a node to view its attributes.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
