@@ -1,4 +1,9 @@
+flask
 pandas
 neo4j
 python-dotenv
-flask
+langchain
+langchain-neo4j
+langchain-groq
+langchain-core
+groq

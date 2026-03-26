@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from db import run_query, close_db
+from System_query.guardrail import QueryGuardrail
 from langchain_neo4j import Neo4jGraph
 from langchain_neo4j.chains.graph_qa.cypher import GraphCypherQAChain
 from langchain_groq import ChatGroq
@@ -122,12 +123,25 @@ if graph:
 def index():
     return render_template('index.html')
 
+guardrail = QueryGuardrail()
+
 @app.route('/api/query', methods=['POST'])
 def query_graph():
     data = request.json
     question = data.get('question')
     if not question:
         return jsonify({"error": "No question provided"}), 400
+    
+    # Check guardrail
+    check = guardrail.check_query(question)
+    if not check['is_allowed']:
+        return jsonify({
+            "question": question,
+            "error": "Query Rejected",
+            "answer": check['reason'],
+            "cypher": "N/A",
+            "results": []
+        })
     
     if not chain:
         return jsonify({"error": "NLQ chain not initialized. Check environment variables."}), 500
@@ -280,5 +294,8 @@ def get_nodes_by_ids():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
-    close_db()
+    try:
+        print("Starting Flask server on http://127.0.0.1:5000")
+        app.run(debug=True, use_reloader=True)
+    finally:
+        close_db()
