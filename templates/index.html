@@ -4,24 +4,39 @@
 <head>
     <title>Graph Explorer</title>
     <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/layout-base/layout-base.js"></script>
+    <script src="https://unpkg.com/cose-base/cose-base.js"></script>
+    <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+    <script src="https://unpkg.com/cytoscape-navigator/cytoscape-navigator.js"></script>
+    <link href="https://unpkg.com/cytoscape-navigator/cytoscape-navigator.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/cytoscape-context-menus/cytoscape-context-menus.js"></script>
+    <link href="https://unpkg.com/cytoscape-context-menus/cytoscape-context-menus.css" rel="stylesheet" type="text/css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0d1117;
             --panel-bg: #161b22;
             --text-color: #c9d1d9;
+            --text-muted: #8b949e;
             --accent-color: #58a6ff;
+            --success-color: #7ee787;
             --border-color: #30363d;
             --header-bg: #010409;
+            --message-bg-ai: #21262d;
+            --glass-bg: rgba(22, 27, 34, 0.8);
         }
 
         body, html {
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background: var(--bg-color);
             color: var(--text-color);
             overflow: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
@@ -95,19 +110,229 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
+            box-shadow: -10px 0 20px rgba(0,0,0,0.4);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: absolute;
             right: 0;
             top: 0;
             bottom: 0;
             z-index: 5;
             transform: translateX(100%);
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .panel-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-group {
+            display: flex;
+            background: #010409;
+            padding: 2px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-item {
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .btn-item.active {
+            background: var(--accent-color);
+            color: #fff;
+        }
+
+        .action-btn {
+            background: var(--message-bg-ai);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            border-color: var(--accent-color);
+            background: #30363d;
+        }
+
+        .action-btn.active {
+            background: rgba(88, 166, 255, 0.1);
+            border-color: var(--accent-color);
+            color: var(--accent-color);
         }
 
         #metadata-panel.visible {
             transform: translateX(0);
             position: relative;
+        }
+
+        #chat-panel {
+            width: 400px;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+            z-index: 10;
+        }
+
+        #chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chat-input-area {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+            background: var(--header-bg);
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: var(--bg-color);
+        }
+
+        .message {
+            max-width: 90%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background: var(--accent-color);
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai-message {
+            align-self: flex-start;
+            background: var(--message-bg-ai);
+            border-bottom-left-radius: 2px;
+            width: 100%;
+            max-width: 100%;
+            border: 1px solid var(--border-color);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .split-screen {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 15px;
+            border-top: 1px dotted var(--border-color);
+            padding-top: 15px;
+        }
+
+        .split-left, .split-right {
+            width: 100%;
+            min-width: 0;
+        }
+
+        .split-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .split-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            font-size: 0.65rem;
+            background: #30363d;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: var(--text-color);
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #484f58;
+        }
+
+        .cypher-code {
+            background: #000;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--success-color);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            border: 1px solid var(--border-color);
+            max-height: 250px;
+            overflow-y: auto;
+            line-height: 1.4;
+        }
+
+        .ai-answer {
+            color: var(--text-color);
+        }
+
+        .loading-dots:after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
         }
 
         .panel-header {
@@ -145,23 +370,156 @@
             margin-top: 50px;
         }
 
+        /* Floating Controls */
+        .floating-controls {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            background: var(--glass-bg);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+        }
+
+        .legend-panel {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            background: var(--glass-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            font-size: 0.75rem;
+            min-width: 150px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .filter-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: #21262d;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .filter-tag.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+
+        /* Minimap tweaks */
+        .cytoscape-navigator {
+            border: 1px solid var(--border-color) !important;
+            background: var(--panel-bg) !important;
+            bottom: 25px !important;
+            left: 25px !important;
+            border-radius: 8px !important;
+        }
+
         .metadata-item {
-            margin-bottom: 10px;
+            margin-bottom: 0;
             border-bottom: 1px solid #21262d;
-            padding-bottom: 8px;
+            padding: 12px 10px;
+            transition: background 0.2s;
+            border-radius: 6px;
+        }
+
+        .metadata-item:hover {
+            background: rgba(88, 166, 255, 0.05);
         }
 
         .metadata-label {
-            font-size: 0.8rem;
-            color: #8b949e;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            margin-bottom: 4px;
             display: block;
-            margin-bottom: 2px;
         }
 
         .metadata-value {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
             word-break: break-all;
+            color: var(--text-color);
+        }
+
+        /* Cytoscape Interaction Styles (fallback/utility) */
+        .dimmed {
+            opacity: 0.15 !important;
+            filter: grayscale(100%);
+            pointer-events: none;
+        }
+
+        .highlighted-neighborhood {
+            opacity: 1 !important;
+            z-index: 999;
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(1, 4, 9, 0.95);
+            border: 1px solid var(--accent-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            color: #fff;
+            z-index: 10000;
+            pointer-events: none;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            max-width: 300px;
+        }
+
+        .tooltip-key {
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-right: 5px;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+        }
+
+        /* Improved Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
         }
     </style>
 </head>
@@ -169,25 +527,70 @@
 <body>
     <div class="container">
         <header>
-            <h1>Graph Explorer</h1>
-            <div class="search-bar">
-                <input type="text" id="search" placeholder="Search node name..." />
-                <button onclick="searchNode()">Search</button>
+            <div class="logo">Graph Explorer <span>| SAP O2C</span></div>
+            <div class="search-container">
+                <input type="text" id="node-search" placeholder="Search node name...">
+                <button onclick="searchNodes()">Search</button>
             </div>
         </header>
         <main>
+            <aside id="chat-panel">
+                <div class="panel-header">
+                    <h2>Natural Language Query</h2>
+                </div>
+                <div id="chat-history">
+                    <div class="ai-message message">
+                        Hello! Ask me anything about your SAP O2C graph data. 
+                        For example: <i>"How many Sales Orders are in the system?"</i>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Ask a question..." onkeydown="if(event.key==='Enter') sendChatMessage()" />
+                    <button onclick="sendChatMessage()">Send</button>
+                </div>
+            </aside>
             <div id="graph"></div>
             <aside id="metadata-panel">
                 <div class="panel-header">
                     <h2>Metadata</h2>
                     <button class="close-btn" onclick="closePanel()">×</button>
                 </div>
-                <div id="metadata-content">
-                    <p class="placeholder-text">Select a node to view its attributes.</p>
+        <div class="panel-section">
+            <div class="panel-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-8m0 0V4m0 8h8m-8 0H4"/></svg>
+                Graph Controls
+            </div>
+            <div class="control-group">
+                <span style="font-size: 0.75rem;">Expansion:</span>
+                <div class="btn-group" id="degree-toggle">
+                    <div class="btn-item active" data-depth="1">1-Hop</div>
+                    <div class="btn-item" data-depth="2">2-Hop</div>
                 </div>
-            </aside>
+            </div>
+            <div class="control-group">
+                <button class="action-btn" id="focus-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+                    Focus Mode
+                </button>
+            </div>
+            <div class="panel-title" style="margin-top: 15px; margin-bottom: 10px;">Filter by Type</div>
+            <div id="type-filters" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <div class="filter-tag active" data-type="SalesOrder">SalesOrder</div>
+                <div class="filter-tag active" data-type="Customer">Customer</div>
+                <div class="filter-tag active" data-type="BillingDocument">Billing</div>
+                <div class="filter-tag active" data-type="DeliveryDocument">Delivery</div>
+                <div class="filter-tag active" data-type="Product">Product</div>
+            </div>
+        </div>
+        <div id="metadata-content" class="panel-section" style="border-bottom: none;">
+            <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 40px;">
+                Select a node to view properties
+            </div>
+        </div>
+    </aside>
         </main>
     </div>
+    <div id="tooltip"></div>
     <script src="/static/script.js"></script>
 </body>
 

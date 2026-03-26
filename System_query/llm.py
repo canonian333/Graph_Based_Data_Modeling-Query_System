@@ -58,6 +58,17 @@ Relationships:
 - (BillingDocument)-[:GENERATES_FINANCIAL]->(AccountingDocument)
 
 Instructions:
+1. ONLY return the Cypher query. No preamble, no markdown.
+2. CRITICAL SYNTAX RULES:
+   - Relationship Arrows: Use `(a)-[:R]->(b)` or `(a)<-[:R]-(b)`. NEVER use `(a)-[:R]<-(b)`.
+   - Pattern Variables: Inside `WHERE NOT (...)` or `WHERE EXISTS (...)`, NEVER use variables for nodes or relationships. Use anonymous patterns.
+     - WRONG: `WHERE NOT (dd)<-[:REF]-(bdi:BillingItem)`
+     - RIGHT: `WHERE NOT (dd)<-[:REF]-(:BillingItem)`
+   - WHERE Placement: `WHERE` must come after `MATCH` and BEFORE `RETURN`. NEVER after `RETURN`.
+3. Use `RETURN DISTINCT` when returning IDs to avoid duplicate rows.
+4. Use node property 'id' for exact matches.
+5. Do NOT use variable-length paths like `*1..1` unless requested.
+6. Use the provided schema ONLY.Instructions:
 1. Only return the Cypher query. No preamble, no markdown code blocks.
 2. Use the provided schema ONLY.
 3. An order is "delivered" if it has a related DeliveryItem via FULFILLS_SALES_ORDER.
