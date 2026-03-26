@@ -15,22 +15,38 @@ class QueryGuardrail:
         )
         self.classifier_prompt = PromptTemplate(
             input_variables=["question"],
-            template="""Task: Classify the user question for an SAP O2C (Order-to-Cash) Graph Database.
-User Question: {question}
+            template="""Task: Classify if the user question is related to the SAP Order-to-Cash (O2C) business dataset.
 
-The graph contains data about:
-- SalesOrders, Customers, Products, DeliveryDocuments, BillingDocuments.
-- Relationships matching these entities (e.g., PLACED_BY, HAS_ITEM, FULFILLS).
+Graph Schema Context:
+- Entities: SalesOrders, Customers, Products, DeliveryDocuments, BillingDocuments.
+- Key Properties: id, salesOrder, customer, product, deliveryDocument, billingDocument.
+- Relationships: PLACED_BY, HAS_ITEM, REQUESTS_PRODUCT, FULFILLS_SALES_ORDER, REFERENCES_DELIVERY.
 
 Classification Rules:
-1. IN_DOMAIN: Questions about orders, customers, products, shipping/deliveries, or billing within this dataset.
-2. OUT_OF_DOMAIN: General knowledge, creative writing, coding help, math, or anything unrelated to this specific business dataset.
+1. ALLOWED (IN_DOMAIN): 
+   - Direct questions about any of the entities above.
+   - Aggregations (counts, sums, averages) related to these entities.
+   - Filters (e.g., "more than 5 orders", "customer C001").
+   - Listing or showing entities (e.g., "Show me all products").
+   - Comparisons between entities or time-based queries if they mention these entities.
+2. REJECTED (OUT_OF_DOMAIN):
+   - General knowledge (e.g., "Who is the president?", "Capital of France").
+   - Coding help, math problems unrelated to the data, or creative writing.
+   - Questions about unrelated datasets or systems.
 
-Instructions:
-- If the question is IN_DOMAIN, return: ALLOWED
-- If the question is OUT_OF_DOMAIN, return: REJECTED | <reason why it is not part of this dataset>
+Examples:
+- "How many Sales Orders are in the system?" -> ALLOWED
+- "Find customers who have placed more than 5 sales orders" -> ALLOWED
+- "Show me all products" -> ALLOWED
+- "Who are the top 10 customers by order count?" -> ALLOWED
+- "What is the capital of France?" -> REJECTED | General knowledge question.
+- "Calculate the square root of 256" -> REJECTED | Math problem unrelated to dataset.
+- "Write a python script to sort a list" -> REJECTED | Coding help.
 
-Response (Allowed or Rejected | Reason):"""
+User Question: {question}
+
+Response Format: ALLOWED or REJECTED | <reason>
+Response:"""
         )
 
     def check_query(self, question):
