@@ -11,3 +11,4 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD")
 NEO4J_DATABASE = os.getenv("NEO4J_DATABASE", "neo4j")
 AURA_INSTANCEID = os.getenv("AURA_INSTANCEID")
 AURA_INSTANCENAME = "Free instance"
+GROQ_API =os.getenv("GROQ_API")
